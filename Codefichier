@@ -1,22 +1,6 @@
 import json
 import datetime
 
-class Tache:
-    def __init__(self, nom, prio, description, date_limit):
-        self.nom = nom
-        self.prio = prio
-        self.description = description
-        self.date_limit = date_limit
-        self.jours_restants = 0
-
-    def affiche(self):
-        print("Tache : " + self.nom)
-        print("Priorité : " + self.prio)
-        print("Description : " + self.description)
-        print("Date limite : " + self.date_limit.strftime('%Y-%m-%d'))  # Formatage de la date
-        delta = self.date_limit - datetime.datetime.now()
-        print("Jours restants : " + str(delta.days))
-
     # Méthode pour convertir l'objet en un dictionnaire qui peut être sérialisé en JSON
     def dict(self):
         return {
