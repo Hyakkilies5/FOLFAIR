@@ -2,11 +2,12 @@ import json
 import datetime
 
 class Tache:
-    def init(self, nom, prio, description, date_limit):  # Corrigé '__init__'
+    def __init__(self, nom, prio, description, date_limit):
         self.nom = nom
         self.prio = prio
         self.description = description
         self.date_limit = date_limit
+        self.jours_restants = 0
 
     def affiche(self):
         print("Tache : " + self.nom)
