@@ -28,7 +28,20 @@ class Tache:
                 break
             except ValueError:
                 print("Le format de la date doit être XX/XX/XXXX.")
-        
 
+    def to_dict(self):
+        return {
+            "nom": self.nom,
+            "prio": self.prio,
+            "description": self.description,
+            "date_limit": self.date_limit.strftime('%d/%m/%Y') if self.date_limit else None
+        }
 
-
+    @classmethod
+    def from_dict(cls, tache_dict):
+        return cls(
+            tache_dict["nom"],
+            tache_dict["prio"],
+            tache_dict["description"],
+            datetime.strptime(tache_dict["date_limit"], '%d/%m/%Y') if tache_dict["date_limit"] else None
+        )
