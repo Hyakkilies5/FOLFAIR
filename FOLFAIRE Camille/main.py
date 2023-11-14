@@ -4,11 +4,21 @@ from TabTaches import *
 #Def du tableau 
 liste = TabTaches()
 
-# Exemple de saisie d'une tâche
-nouvelle_tache = Tache("", 0, "", "")
+'''nouvelle_tache = Tache('',0,'','')
+nouvelle_tache.saisie()
+liste.ajouter_tache(nouvelle_tache)
 nouvelle_tache.saisie()
 liste.ajouter_tache(nouvelle_tache)
 
-# Affichage de toutes les tâches
 liste.afficher_taches()
 
+print("\nDonnées dans Tableau")
+liste.afficher_taches()
+liste.enregistrer_json('taches.json')
+
+print("Blabla\n")
+liste = TabTaches()'''
+liste.charger_json("taches.json")
+liste.afficher_taches()
+liste.tri_prio()
+liste.afficher_taches()
