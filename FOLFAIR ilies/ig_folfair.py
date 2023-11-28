@@ -6,11 +6,24 @@ image_folfair = None
 image_barre = None
 bg_image = None
 change_login_window = None
+changement_cesar = 3
 
-
+def caesar_cipher(text, shift):
+    result = ""
+    for char in text:
+        if char.isalpha():
+            ascii_offset = ord('A') if char.isupper() else ord('a')
+            result += chr((ord(char) - ascii_offset + shift) % 26 + ascii_offset)
+        else:
+            result += char
+    return result
 
 def save_config(login, password):
-    config_data = {"login": login, "password": password}
+    encrypted_login = caesar_cipher(login, changement_cesar)
+    encrypted_password = caesar_cipher(password, changement_cesar)
+    
+    config_data = {"login": encrypted_login, "password": encrypted_password}
+    
     with open("config.json", "w") as config_file:
         json.dump(config_data, config_file)
 
@@ -18,10 +31,12 @@ def load_config():
     try:
         with open("config.json", "r") as config_file:
             config_data = json.load(config_file)
-            return config_data["login"], config_data["password"]
+            decrypted_login = caesar_cipher(config_data["login"], -changement_cesar)
+            decrypted_password = caesar_cipher(config_data["password"], -changement_cesar)
+            return decrypted_login, decrypted_password
     except FileNotFoundError:
         return "", ""
-
+    
 def verify():
     user = entry_login.get()
     passwd = entry_password.get()
@@ -140,7 +155,7 @@ window.config(bg=bg)
 
 #Creation de widgets page de login
 
-titre_connexion = Label(window, text="CONNECTION", font=("Courrier", 24, "bold"), bg=bg)
+titre_connexion = Label(window, text="CONNEXION", font=("Courrier", 24, "bold"), bg=bg)
 label_login = Label(window, text="Utilisateur : ", font=("Arial", 15), bg=bg)
 label_password = Label(window, text="Mot de passe : ", font=("Arial", 15), bg=bg)
 
