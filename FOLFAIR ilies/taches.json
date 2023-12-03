@@ -1,0 +1,23 @@
+[
+    {
+        "nom": "Courses",
+        "prio": 4,
+        "description": "Faire les courses",
+        "date_limit": "19/11/2023",
+        "jours_restants": 50
+    },
+    {
+        "nom": "Manger",
+        "prio": 5,
+        "description": "Repas de noel",
+        "date_limit": "25/12/2023",
+        "jours_restants": 13
+    },
+    {
+        "nom": "Manger 2",
+        "prio": 3,
+        "description": "Manger Miam Miam",
+        "date_limit": "25/12/2024",
+        "jours_restants": 58
+    }
+]

@@ -1,5 +1,8 @@
+from Tache import *
+from TabTaches import *
 from tkinter import *
 import json
+
 
 bg = "#7FA0AB"
 image_folfair = None
@@ -7,6 +10,9 @@ image_barre = None
 bg_image = None
 change_login_window = None
 changement_cesar = 3
+nouvelle_tache = Tache('',0,'','')
+#Def du tableau 
+liste = TabTaches()
 
 def caesar_cipher(text, shift):
     result = ""
@@ -86,50 +92,165 @@ def save_new_login_password(new_login, new_password):
 
 
 def ajouter_tache():
-    pass
+    global liste
+    global compteur_taches
+    
+    compteur_taches = 0
+
+    nouvelle_tache.nom = entry_nom.get()
+    nouvelle_tache.prio = entry_prio.get()
+    nouvelle_tache.description = entry_desc.get()
+
+    if not all([nouvelle_tache.nom, nouvelle_tache.prio, nouvelle_tache.description, entry_date.get()]):
+        return
+
+    date_entry_value = entry_date.get()
+    if date_entry_value:
+        try:
+            nouvelle_tache.date_limit = datetime.strptime(date_entry_value, "%d/%m/%Y")
+            nouvelle_tache.jours_restants = (nouvelle_tache.date_limit - datetime.now()).days
+            label_erreur1.config(fg = "green")
+        except ValueError:
+            label_erreur1.config(fg = "red")
+            return
+        
+        if nouvelle_tache.prio.isdigit():
+            if int(nouvelle_tache.prio) <= 5 and int(nouvelle_tache.prio) >= 1:
+                label_erreur1.config(fg="white")
+                label_erreur2.config(fg="white")
+                liste.ajouter_tache(nouvelle_tache)
+                compteur_taches += 1
+                entry_nom.delete(0, "end")
+                entry_prio.delete(0, "end")
+                entry_desc.delete(0, "end")
+                entry_date.delete(0, "end")
+            else:
+                label_erreur2.config(fg = "red")
+        else:
+            label_erreur2.config(fg = "red")
+    
+
+    if compteur_taches > 12:
+        save_button.config(text="Nombre Max", state=DISABLED)
+
+    
     
 
 def voir_tache():
+    global liste, fenetre_dialogue
+
     def confirmer():
-        nb_cadres = spinbox_nb_cadres.get()
+        tri_selectionne = var_tri.get()  # Récupérer la méthode de tri sélectionnée
         fenetre_dialogue.destroy()
-        creer_fenetre_taches(int(nb_cadres))
+        creer_fenetre_taches(tri_selectionne)
 
-    def demander_nombre_cadres():
-        global fenetre_dialogue
-        fenetre_dialogue = Toplevel(window)
-        fenetre_dialogue.title("Nombre de tâche")
-        fenetre_dialogue.geometry("300x150")
-        fenetre_dialogue.resizable(False, False)
-        fenetre_dialogue.config(bg="black")
-        fenetre_dialogue.iconbitmap("logo_folfair.ico")
+    fenetre_dialogue = Toplevel(window)
+    fenetre_dialogue.title("Tâches à afficher")
+    fenetre_dialogue.geometry("300x150")
+    fenetre_dialogue.resizable(False, False)
+    fenetre_dialogue.config(bg="black")
+    fenetre_dialogue.iconbitmap("logo_folfair.ico")
 
-        label = Label(fenetre_dialogue, text="Nombre de tâches à afficher:", font=("Courrier", 12, "bold"), bg="black", fg="white")
-        label.pack(pady=10)
+    label = Label(fenetre_dialogue, text="Méthode d'affichage:", font=("Courrier", 12, "bold"), bg="black", fg="white")
+    label.pack(pady=10)
 
-        global spinbox_nb_cadres
-        spinbox_nb_cadres = Spinbox(fenetre_dialogue, from_=1, to=10, width=5, bg="black", fg="white", font=("Courrier", 12, "bold"))
-        spinbox_nb_cadres.pack(pady=10)
+    # Options de tri, vous pouvez les ajuster selon vos besoins
+    options_tri = ["Classique", "Tri par nom", "Tri par priorité", "Tri par date limite", "Tri par jours restants"]
 
-        bouton_confirmer = Button(fenetre_dialogue, text="Confirmer", command=confirmer, bg="black", fg="white", font=("Courrier", 12, "bold"))
-        bouton_confirmer.pack()
+    global var_tri
+    var_tri = StringVar(fenetre_dialogue)
+    var_tri.set(options_tri[0])  # Par défaut, sélectionner le premier élément
 
-    demander_nombre_cadres()
+    menu_tri = OptionMenu(fenetre_dialogue, var_tri, *options_tri)
+    menu_tri.config(bg="black", fg="white", font=("Courrier", 12, "bold"))
+    menu_tri.pack(pady=10)
 
-def creer_fenetre_taches(nb_cadres):
+    bouton_confirmer = Button(fenetre_dialogue, text="Confirmer", command=confirmer, bg="black", fg="white", font=("Courrier", 12, "bold"))
+    bouton_confirmer.pack()
+
+
+
+def creer_fenetre_taches(methode_tri):
     fenetre_taches = Toplevel(window)
     fenetre_taches.title("Liste des tâches")
-    fenetre_taches.resizable(True, True)
+    fenetre_taches.resizable(False, False)
     fenetre_taches.config(bg="black")
     fenetre_taches.iconbitmap("logo_folfair.ico")
 
-    for i in range(nb_cadres):
-        cadre = Frame(fenetre_taches, bg="white", height=500 // nb_cadres, width=1000, borderwidth=1, relief="solid")
-        cadre.grid(row=i, column=0, sticky="nsew")
+    # Lancer la fenêtre en plein écran
+    fenetre_taches.attributes('-fullscreen', True)
 
-    for i in range(nb_cadres):
+    # Récupérer la largeur de l'écran
+    largeur_ecran = fenetre_taches.winfo_screenwidth()
+
+    # Trier les tâches en fonction de la méthode sélectionnée
+    if methode_tri == "Tri par nom":
+        liste.tri_par_nom()
+    elif methode_tri == "Tri par priorité":
+        liste.tri_par_priorite()
+    elif methode_tri == "Tri par date limite":
+        liste.tri_par_date_limite()
+    elif methode_tri == "Tri par jours restants":
+        liste.tri_par_jours_restants()
+
+    # Calculer la hauteur nécessaire en fonction du nombre de tâches
+    hauteur_necessaire = len(liste.taches) // 4 * 110 + 110  # Pour prendre en compte la dernière ligne incomplète
+
+    # Définir la hauteur minimale de la fenêtre
+    fenetre_taches.minsize(width=min(largeur_ecran, 1000), height=min(hauteur_necessaire, 600))
+
+    # Créer les emplacements pour les tâches
+    for i in range(12):
+        ligne = i // 4
+        colonne = i % 4
+
+        cadre = Frame(fenetre_taches, bg="white", height=100, width=250, borderwidth=1, relief="solid")
+        cadre.grid(row=ligne, column=colonne, sticky="nsew")
+
+        if i < len(liste.taches):
+            tache = liste.taches[i]
+
+            # Utilisation d'une grille pour organiser les informations de la tâche
+            numero_case = i + 1
+            label_numero_case = Label(cadre, text=f"N°{numero_case}", font=("Arial", 12, "bold"), bg="grey", fg="white")
+            label_numero_case.grid(row=0, column=1, sticky="ne", padx=5, pady=5)
+
+            label_nom = Label(cadre, text="Nom: " + tache.get_nom(), font=("Helvetica", 12, "bold"), bg="white", wraplength=230)
+            label_nom.grid(row=0, column=0, sticky="w", padx=5, pady=5)
+
+            label_prio = Label(cadre, text="Priorité: " + tache.get_prio(), font=("Helvetica", 12, "bold"), bg="white", wraplength=230)
+            label_prio.grid(row=1, column=0, sticky="w", padx=5, pady=5)
+
+            label_desc = Label(cadre, text="Description: " + tache.get_desc(), font=("Helvetica", 12, "bold"), bg="white", wraplength=230)
+            label_desc.grid(row=2, column=0, sticky="w", padx=5, pady=5)
+
+            label_date = Label(cadre, text="Date limite: " + tache.get_date_limit(), font=("Helvetica", 12, "bold"), bg="white", wraplength=230)
+            label_date.grid(row=3, column=0, sticky="w", padx=5, pady=5)
+
+            label_jour = Label(cadre, text="Jours restants: " + str(tache.get_jours_restant()), font=("Helvetica", 12, "bold"), bg="white", wraplength=230)
+            label_jour.grid(row=4, column=0, sticky="w", padx=5, pady=5)
+        else:
+            # Si la case n'a pas de tâche, afficher un message vide
+            label_vide = Label(cadre, text="", font=("Arial", 12, "bold"), bg="white", wraplength=230)
+            label_vide.grid(row=0, column=0, sticky="w", padx=5, pady=5)
+
+    # Configurer le poids des lignes et colonnes pour l'expansion
+    for i in range(3):
         fenetre_taches.grid_rowconfigure(i, weight=1)
-    fenetre_taches.grid_columnconfigure(0, weight=1)
+
+    for j in range(4):
+        fenetre_taches.grid_columnconfigure(j, weight=1)
+
+    # Ajouter une barre de menu
+    menu_bar_taches = Menu(fenetre_taches)
+
+    # Créer un menu pour quitter avec une police plus grande et en noir
+    file_menu_taches = Menu(menu_bar_taches, tearoff=0)
+    file_menu_taches.add_command(label="Quitter", command=fenetre_taches.destroy)
+    menu_bar_taches.add_cascade(label="Fichier", menu=file_menu_taches)
+
+    # Configurer la fenêtre pour ajouter la barre de menu
+    fenetre_taches.config(menu=menu_bar_taches)
 
 
 
@@ -166,7 +287,7 @@ label_access = Label(window, fg="red", bg=bg)
 button_valider = Button(window, text="Valider", font=("Courrier", 12), bg=bg, command=verify)
 
 #Placement des widgets page de login
-titre_connexion.place(x=45, y=20)
+titre_connexion.place(x=50, y=20)
 
 label_login.place(x=20, y=100)
 label_password.place(x=20, y=150)
@@ -187,6 +308,14 @@ def page_info():
     global image_barre
     global bg_image
     global image_barre2
+    global entry_nom
+    global entry_prio
+    global entry_desc
+    global entry_date
+    global label_erreur1
+    global label_erreur2
+    global save_button
+    
 
     #config de la page
     bg = "#BFCDF7"
@@ -207,8 +336,6 @@ def page_info():
     width_barre = 600
     height_barre = 15
 
-    width_barre2 = 10
-    height_barre2 = 338
 
     image_folfair = PhotoImage(file="logo_folfair.png").zoom(7).subsample(33)
     image_barre = PhotoImage(file="barre_noir.png").zoom(10).subsample(20)
@@ -233,7 +360,14 @@ def page_info():
     entry_desc = Entry(window, font=("Helvetica", 20), width=42, bg="#D4D4EC", fg="#000000")
     entry_date = Entry(window, font=("Helvetica", 20), width=40, bg="#D4D4EC", fg="#000000")
 
+    label_erreur1 = Label(window, text="<", font=("Arial", 30), bg="white", fg="white")
+    label_erreur2 = Label(window, text="<", font=("Arial", 30), bg="white", fg="white")
+    
+
+
+        
     save_button = Button(window, text="Ajouter tâche", font=("Courrier, 17"), bg="white", fg="black", command=ajouter_tache)
+    
 
     see_button = Button(window, text="Voir tâches", font=("Courrier, 15"), bg=bg, fg="white", command=voir_tache)
 
@@ -259,10 +393,13 @@ def page_info():
     entry_desc.place(x=400, y=404)
     entry_date.place(x=430, y=504)
 
-
+    
     save_button.place(x= 1045, y=347)
     see_button.place(x=1080, y=10)
 
+
+    label_erreur1.place(x=1040, y=498)
+    label_erreur2.place(x=1040, y=300)
     # creation d'une barre de menu
 
     menu_bar = Menu(window)
@@ -283,3 +420,6 @@ def page_info():
 
 #Loop de la page principal
 window.mainloop()
+
+
+
