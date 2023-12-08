@@ -15,6 +15,15 @@ class TabTaches:
         for tache in self.taches:
             print(tache)  # Affiche chaque tâche en utilisant sa méthode __str__
 
+    def tri_par_nom(self) :
+        self.taches.sort(key=lambda tache: tache.nom)
+
+    def tri_par_priorite(self) :
+        self.taches.sort(key=lambda tache: tache.prio, reverse=True)
+
+    def tri_par_date_limite(self) :
+        self.taches.sort(key=lambda tache: tache.date_limit)
+
     def supprimer_tache(self, tache):
         if tache in self.taches:
             self.taches.remove(tache)
@@ -35,4 +44,6 @@ class TabTaches:
         except FileNotFoundError:
             print(f"Fichier '{nom_fichier}' non trouvé. Aucune tâche chargée.")
 
+
+    
     

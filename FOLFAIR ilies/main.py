@@ -2,6 +2,7 @@ from Tache import *
 from TabTaches import *
 from tkinter import *
 import json
+from datetime import datetime
 
 
 bg = "#7FA0AB"
@@ -11,9 +12,13 @@ bg_image = None
 change_login_window = None
 changement_cesar = 3
 nouvelle_tache = Tache('',0,'','')
+
 #Def du tableau 
 liste = TabTaches()
-
+liste.charger_json("taches.json")
+for tache in liste.taches :
+    tache.jours_restants = (tache.date_limit - datetime.now()).days
+    
 def caesar_cipher(text, shift):
     result = ""
     for char in text:
@@ -133,6 +138,8 @@ def ajouter_tache():
     if compteur_taches > 12:
         save_button.config(text="Nombre Max", state=DISABLED)
 
+    liste.enregistrer_json("taches.json")
+
     
     
 
@@ -154,8 +161,7 @@ def voir_tache():
     label = Label(fenetre_dialogue, text="Méthode d'affichage:", font=("Courrier", 12, "bold"), bg="black", fg="white")
     label.pack(pady=10)
 
-    # Options de tri, vous pouvez les ajuster selon vos besoins
-    options_tri = ["Classique", "Tri par nom", "Tri par priorité", "Tri par date limite", "Tri par jours restants"]
+    options_tri = ["Classique", "Tri par nom", "Tri par priorité", "Tri par Date limite/Jours restants"]
 
     global var_tri
     var_tri = StringVar(fenetre_dialogue)
@@ -169,8 +175,43 @@ def voir_tache():
     bouton_confirmer.pack()
 
 
+def supprimer_tache():
+    global liste
+
+    def confirmer_suppression():
+        nom_tache = entry_nom_tache.get()
+        if nom_tache != None:
+            tache_a_supprimer = None
+            for tache in liste.taches:
+                if tache.get_nom() == nom_tache:
+                    tache_a_supprimer = tache
+                    break
+
+            if tache_a_supprimer != None:
+                liste.supprimer_tache(tache_a_supprimer)
+                fenetre_saisie.destroy()
+                fenetre_taches.destroy()
+                creer_fenetre_taches("Classique")
+
+    fenetre_saisie = Toplevel(window)
+    fenetre_saisie.title("Supprimer une tâche")
+    fenetre_saisie.geometry("250x100")
+    fenetre_saisie.resizable(False, False)
+    fenetre_saisie.iconbitmap("logo_folfair.ico")
+
+    label_nom_tache = Label(fenetre_saisie, text="Nom de la tâche:", font=("Helvetica", 12, "bold"))
+    entry_nom_tache = Entry(fenetre_saisie, font=("Helvetica", 12))
+    bouton_ok = Button(fenetre_saisie, text="OK", command=confirmer_suppression)
+    bouton_annuler = Button(fenetre_saisie, text="Annuler", command=fenetre_saisie.destroy)
+
+    label_nom_tache.pack(pady=5)
+    entry_nom_tache.pack(pady=5)
+    bouton_ok.place(x=80,y=70)
+    bouton_annuler.place(x=120,y=70)
+
 
 def creer_fenetre_taches(methode_tri):
+    global fenetre_taches
     fenetre_taches = Toplevel(window)
     fenetre_taches.title("Liste des tâches")
     fenetre_taches.resizable(False, False)
@@ -188,10 +229,8 @@ def creer_fenetre_taches(methode_tri):
         liste.tri_par_nom()
     elif methode_tri == "Tri par priorité":
         liste.tri_par_priorite()
-    elif methode_tri == "Tri par date limite":
+    elif methode_tri == "Tri par Date limite/Jours restants":
         liste.tri_par_date_limite()
-    elif methode_tri == "Tri par jours restants":
-        liste.tri_par_jours_restants()
 
     # Calculer la hauteur nécessaire en fonction du nombre de tâches
     hauteur_necessaire = len(liste.taches) // 4 * 110 + 110  # Pour prendre en compte la dernière ligne incomplète
@@ -244,8 +283,8 @@ def creer_fenetre_taches(methode_tri):
     # Ajouter une barre de menu
     menu_bar_taches = Menu(fenetre_taches)
 
-    # Créer un menu pour quitter avec une police plus grande et en noir
     file_menu_taches = Menu(menu_bar_taches, tearoff=0)
+    file_menu_taches.add_command(label="Supprimer une tâche", command=supprimer_tache)
     file_menu_taches.add_command(label="Quitter", command=fenetre_taches.destroy)
     menu_bar_taches.add_cascade(label="Fichier", menu=file_menu_taches)
 
@@ -400,6 +439,7 @@ def page_info():
 
     label_erreur1.place(x=1040, y=498)
     label_erreur2.place(x=1040, y=300)
+
     # creation d'une barre de menu
 
     menu_bar = Menu(window)
@@ -420,6 +460,3 @@ def page_info():
 
 #Loop de la page principal
 window.mainloop()
-
-
-

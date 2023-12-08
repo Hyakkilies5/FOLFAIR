@@ -8,6 +8,8 @@ class Tache:
         self.date_limit = date_limit
         self.jours_restants = 0
 
+    """
+
     def __str__(self):
         return f"Tache : {self.nom}\nPriorité : {self.prio}\nDescription : {self.description}\nDate limite : {self.date_limit}\nJours restants :{self.jours_restants}\n"
 
@@ -29,12 +31,15 @@ class Tache:
             except ValueError:
                 print("Le format de la date doit être XX/XX/XXXX.")
 
+        """
+
     def to_dict(self):
         return {
             "nom": self.nom,
             "prio": self.prio,
             "description": self.description,
-            "date_limit": self.date_limit.strftime('%d/%m/%Y') if self.date_limit else None
+            "date_limit": self.date_limit.strftime('%d/%m/%Y') if self.date_limit else None,
+            "jours_restants": self.jours_restants
         }
 
     @classmethod
